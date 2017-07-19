@@ -91,7 +91,7 @@ export default class MainPage extends Component {
     const { navigation } = this.props;
     if (!this.state.loading) {
       return (
-        <ListView
+        <ListView enableEmptySections = {true} 
             style={styles.listView}
             dataSource={this.state.dataSource}
             renderRow={this._renderItem.bind(this)}

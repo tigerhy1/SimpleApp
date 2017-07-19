@@ -3,6 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Touchable,
   StyleSheet
 } from 'react-native'
 
@@ -14,11 +15,56 @@ import theme from '../config/theme';
 export default class ArtItemCard extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      oo_cnt: this.props.oo_cnt,
+      xx_cnt: this.props.xx_cnt
+    };
   }
 
   handleGoto() {
+    if (this.props.quoteId == undefined) {
+      return;
+    }
       const { navigation, quoteId } = this.props;
       navigation.navigate('Root', {type: 'list', quoteId: quoteId});
+  }
+
+  handleOOXX(oo) {
+    if (this.props.quoteId == undefined) {
+      return;
+    }
+    console.log("in handleOOXX");
+    const url = 'http://localhost:8080/quote/submit_ooxx';
+    fetch(url,
+          {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: 1,
+              id: this.props.quoteId.toString(),
+              oo: oo
+            })})
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log('http result = ' + responseJson.code);
+        if (responseJson.code == 200) {
+          if (oo) {
+            console.log("in oo");
+            const v = this.state.oo_cnt+1;
+            this.setState({oo_cnt: v});
+          }
+          else {
+            const v = this.state.xx_cnt+1;
+            this.setState({xx_cnt: v});
+          }
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 
   render() {
@@ -32,6 +78,7 @@ export default class ArtItemCard extends Component {
       comment_cnt,
       time,
     } = this.props;
+
 
     const background = { backgroundColor: '#ffffff' };
 
@@ -54,14 +101,21 @@ export default class ArtItemCard extends Component {
             </View>
         </TouchableOpacity>
         <View style={styles.bottom}>
-          <Text style={styles.commentText}>OO</Text>
-          <Text style={styles.commentNumber}>[{oo_cnt}]</Text>
+          <TouchableOpacity style={styles.touchable} onPress={()=>{this.handleOOXX.bind(this)(true)}}>
+            <Text style={[styles.commentText, styles.ooStyle]}>OO</Text>
+            <Text style={styles.commentNumber}>[{this.state.oo_cnt}]</Text>
+          </TouchableOpacity>
           <Text style={styles.commentPoint}>·</Text>
-          <Text style={styles.commentText}>XX</Text>
-          <Text style={styles.commentNumber}>[{xx_cnt}]</Text>
+          <TouchableOpacity style={styles.touchable} onPress={()=>{this.handleOOXX.bind(this)(false)}}>
+            <Text style={[styles.commentText, styles.xxStyle]}>XX</Text>
+            <Text style={styles.commentNumber}>[{this.state.xx_cnt}]</Text>
+          </TouchableOpacity>
           <Text style={styles.commentPoint}>·</Text>
-          <Text style={styles.commentText}>评论</Text>
-          <Text style={styles.commentNumber}>[{comment_cnt}]</Text>
+          <TouchableOpacity style={styles.touchable} onPress={this.handleGoto.bind(this)}>
+            <Text style={[styles.commentText, styles.pinglunStype]}>评论</Text>
+            <Text style={styles.commentNumber}>[{comment_cnt}]</Text>
+          </TouchableOpacity>
+
         </View>
 
       </View>
@@ -100,13 +154,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         padding: 0,
         paddingTop: 10,
-        alignItems: 'center'
+        alignItems: 'center',
   },
   commentNumber: {
         marginRight: 0,
         marginLeft: 5,
         fontSize: 13,
-        //color: theme.grayColor
+        color: theme.gray2
   },
   commentText: {
       marginRight: 0,
@@ -114,11 +168,22 @@ const styles = StyleSheet.create({
       fontSize: 13,
       //color: theme.grayColor
   },
+  ooStyle: {
+    color: '#faa',
+    fontWeight: 'bold'
+  },
+  xxStyle: {
+    color: '#aaf',
+    fontWeight: 'bold'
+  },
+  pinglunStype: {
+    color: theme.gray2
+  },
   commentPoint: {
       marginRight: 5,
       marginLeft: 5,
       fontSize: 13,
-      //color: theme.grayColor
+      color: theme.gray2
   },
   author: {
       color: '#000',
@@ -129,4 +194,8 @@ const styles = StyleSheet.create({
       fontSize: 12,
       color: theme.grayColor,
   },
+  touchable:{
+    flexDirection: 'row',
+    alignItems: 'center'
+  }
 })

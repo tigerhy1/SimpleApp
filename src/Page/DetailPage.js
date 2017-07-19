@@ -159,6 +159,7 @@ class DetailPage extends Component {
             oo_cnt : comment.ooCnt,
             xx_cnt : comment.xxCnt,
             time : comment.time,
+            quoteId: info.quoteId,
             index : comment.index
           };
           commentList.push(item);
@@ -166,9 +167,11 @@ class DetailPage extends Component {
         }
 
         console.log("info author= " + info.author);
+        //var tmp = commentList.slice(0);
+        commentList.reverse();
         this.setState({
            info : info,
-           commentList: commentList.reverse(),
+           commentList: commentList,
            dataSource: ds.cloneWithRows(commentList),
            loading: false
         });
@@ -285,6 +288,8 @@ class DetailPage extends Component {
     });
   }
 
+
+
   submitComment() {
 
     console.log('text = ' + this.state.text);
@@ -314,17 +319,20 @@ class DetailPage extends Component {
             oo_cnt : comment.ooCnt,
             xx_cnt : comment.xxCnt,
             time : comment.time,
+            quoteId: this.props.quoteId,
             index : comment.index
           };
-          const comments = [item].concat(this.state.commentList);
-          const ds = new ListView.DataSource({
+          console.log("comment oo_cnt = " + item.oo_cnt);
+          //this.state.commentList.push(item);
+          const tmp = [item].concat(this.state.commentList);
+          /*const ds = new ListView.DataSource({
               rowHasChanged: (r1, r2) => r1 !== r2
-          });
-          this.setIsTypingDisabled(false); 
+          });*/
+          this.setIsTypingDisabled(false);
           this.setState({
              text: '',
-             commentList: comments,
-             dataSource: ds.cloneWithRows(comments),
+             commentList: tmp,
+             dataSource: this.state.dataSource.cloneWithRows(tmp),
           });
         }
       })
@@ -371,6 +379,8 @@ class DetailPage extends Component {
 
   _renderItem(rowData, sectionID, rowID, highlightRow) {
     return (<CommentCard
+                 quoteId = {rowData.quoteId}
+                 index = {rowData.index}
                  author = {rowData.author}
                  content = {rowData.content}
                  oo_cnt = {rowData.oo_cnt}
@@ -392,7 +402,7 @@ class DetailPage extends Component {
                          xx_cnt = {info.xx_cnt}
                          comment_cnt = {info.comment_cnt}
                          time = {info.time}/>
-              <ListView
+              <ListView enableEmptySections={true}
                   style={styles.listView}
                   dataSource={this.state.dataSource}
                   renderRow={this._renderItem.bind(this)}

@@ -15,6 +15,61 @@ import theme from '../config/theme';
 export default class CommentCard extends Component {
   constructor(props) {
     super(props);
+    console.log("props, index = " + this.props.index
+      + " oo = " + this.props.oo_cnt + " xx = " +this.props.xx_cnt
+      + " content = " + this.props.content);
+    this.state = {
+      oo_cnt: this.props.oo_cnt,
+      xx_cnt: this.props.xx_cnt
+    };
+  }
+
+  handleOOXX(oo) {
+    console.log(this.props.quoteId.toString());
+    console.log(this.props.index.toString());
+    const id = this.props.quoteId.toString() + "_" + this.props.index.toString();
+
+    console.log("in handleOOXX, id = " + id);
+    const url = 'http://localhost:8080/quote/submit_ooxx';
+    fetch(url,
+          {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: 1,
+              id: id,
+              oo: oo
+            })})
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log('http result = ' + responseJson.code);
+        if (responseJson.code == 200) {
+          if (oo) {
+            console.log("in oo");
+            const v = this.state.oo_cnt+1;
+            this.setState({oo_cnt: v});
+          }
+          else {
+            const v = this.state.xx_cnt+1;
+            this.setState({xx_cnt: v});
+          }
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+
+
+  componentWillReceiveProps(nextProps) {
+    console.log("comment mount, oo_cnt = " + this.props.oo_cnt);
+    this.setState({
+      oo_cnt: this.props.oo_cnt,
+      xx_cnt: this.props.xx_cnt
+    });
   }
 
   render() {
@@ -24,6 +79,8 @@ export default class CommentCard extends Component {
       oo_cnt,
       xx_cnt,
       time,
+      quoteId,
+      index
     } = this.props;
 
     return(
@@ -35,10 +92,12 @@ export default class CommentCard extends Component {
                        <Text style={styles.time}>@ {time}</Text>
                      </View>
                      <View style={styles.oo_xx}>
-                       <Text style={styles.commentText}>OO</Text>
-                       <Text style={styles.commentNumber}>[{oo_cnt}]</Text>
+                       <TouchableOpacity style={styles.touchable} onPress={()=>{this.handleOOXX.bind(this)(true)}}>
+                          <Text style={styles.commentText}>OO</Text>
+                          <Text style={styles.commentNumber}>[{this.state.oo_cnt}]</Text>
+                       </TouchableOpacity>
                        <Text style={styles.commentText}>  XX</Text>
-                       <Text style={styles.commentNumber}>[{xx_cnt}]</Text>
+                       <Text style={styles.commentNumber}>[{this.state.xx_cnt}]</Text>
                      </View>
                 </View>
                 <Text style={styles.content}>{content}</Text>
@@ -110,5 +169,9 @@ const styles = StyleSheet.create({
     infoBarText: {
         fontSize: 11,
         color: theme.grayColor
+    },
+    touchable:{
+      flexDirection: 'row',
+      alignItems: 'center'
     }
 });
